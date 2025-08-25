@@ -3,26 +3,38 @@ import dotenv from "dotenv";
 import cors from "cors";
 import uploadRoutes from "./routes/upload.route.js";
 
-dotenv.config()
+dotenv.config();
 
 const app = express();
 
-// CORS setup for localhost:5174
+
+const allowedOrigins = [
+  "http://localhost:5173",  
+  "https://sof-event-extractor-frontend.vercel.app"
+];
+
 app.use(cors({
-    origin: "*",
-    credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("❌ Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT"],
+  credentials: true
 }));
 
-app.use(express.json())
+app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("Hello from Server.js");
+  res.send("Hello from Server.js");
 });
 
-app.use('/', uploadRoutes);
+app.use("/", uploadRoutes);
 
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log(`Server running on ${PORT} port`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
