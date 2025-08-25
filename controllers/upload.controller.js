@@ -37,7 +37,9 @@ export const getDownloadURL = async (req,res,next)=>{
 
     try {
 
-        const {fileName} = req.query;
+        const { fileName} = req.body;
+        console.log(fileName);
+       
         if(!fileName){
 
             return res.json({
