@@ -1,5 +1,5 @@
 import { s3Client } from '../config/aws.js';
-import { PutObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, GetObjectCommand, HeadObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 
@@ -38,5 +38,29 @@ export const getPresignedDownloadURL = async (fileName) => {
       return { ready: false };
     }
     throw error; 
+  }
+};
+
+export const listFilesWithPrefix = async (prefix) => {
+  try {
+    const command = new ListObjectsV2Command({
+      Bucket: process.env.S3_OUTPUT_BUCKET,
+      Prefix: prefix,
+    });
+
+    const response = await s3Client.send(command);
+    
+    // Extract just the filenames without the directory path
+    const files = (response.Contents || []).map(obj => {
+      const fullKey = obj.Key;
+      // Remove the directory path to get just the filename
+      const pathParts = fullKey.split('/');
+      return pathParts[pathParts.length - 1]; // Get the last part (filename)
+    });
+
+    return files;
+  } catch (error) {
+    console.error('Error listing files from S3:', error);
+    throw error;
   }
 };

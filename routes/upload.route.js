@@ -7,6 +7,6 @@ const router =  express.Router();
 
 router.post('/upload-url',getUploadURL);
 router.post('/download-url',getDownloadURL);
-
+router.post('/list-files', listFiles);
 
 export default router;

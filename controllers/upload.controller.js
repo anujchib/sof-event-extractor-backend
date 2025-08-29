@@ -1,22 +1,16 @@
-import { getPresignedDownloadURL,getPresignedUploadURL } from "../services/s3.service.js";
+import { getPresignedDownloadURL, getPresignedUploadURL, listFilesWithPrefix } from "../services/s3.service.js";
 
-export const getUploadURL = async (req,res,next)=>{
-
-
-
+export const getUploadURL = async (req, res, next) => {
     try {
-
         const { fileName, fileType, fileSize } = req.body;
         
         console.log('Request body:', { fileName, fileType, fileSize });
       
-        if(!fileName){
-
+        if (!fileName) {
             return res.json({
-                error:"fileName is required"
-            })
-            
-        };
+                error: "fileName is required"
+            });
+        }
 
         const url = await getPresignedUploadURL(fileName);
         res.json({
@@ -24,29 +18,20 @@ export const getUploadURL = async (req,res,next)=>{
         });
         
     } catch (err) {
-        next(err)
-        
+        next(err);
     }
-}
+};
 
-
-
-export const getDownloadURL = async (req,res,next)=>{
-
-
-
+export const getDownloadURL = async (req, res, next) => {
     try {
-
-        const { fileName} = req.body;
+        const { fileName } = req.body;
         console.log(fileName);
        
-        if(!fileName){
-
+        if (!fileName) {
             return res.json({
-                error:"fileName is required"
-            })
-            
-        };
+                error: "fileName is required"
+            });
+        }
 
         const url = await getPresignedDownloadURL(fileName);
         res.json({
@@ -54,7 +39,35 @@ export const getDownloadURL = async (req,res,next)=>{
         });
         
     } catch (err) {
-        next(err)
-        
+        next(err);
     }
-}
+};
+
+export const listFiles = async (req, res, next) => {
+    try {
+        const { baseFileName, directory = "extracted-text" } = req.body;
+        
+        console.log('Listing files for:', { baseFileName, directory });
+        
+        if (!baseFileName) {
+            return res.json({
+                error: "baseFileName is required"
+            });
+        }
+
+        // Create prefix to search for files
+        const prefix = `${directory}/${baseFileName}_extracted-`;
+        
+        const files = await listFilesWithPrefix(prefix);
+        
+        console.log('Found files:', files);
+        
+        res.json({
+            files: files
+        });
+        
+    } catch (err) {
+        console.error('Error listing files:', err);
+        next(err);
+    }
+};
